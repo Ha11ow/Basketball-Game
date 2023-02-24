@@ -17,7 +17,6 @@ let walls;
 let ball;
 let shadow;
 let net;
-let netsign;
 let netbound2;
 let holder;
 let netwall;
@@ -34,32 +33,37 @@ let ballY = 500;
 let finalScore = 0;
 let scoreSize = 32;
 
+
 function preload() {
-    basketBallImg = loadImage('Basketball.png');
-    netImg = loadImage('net.png');
+    basketBallImg = loadImage('pictures/Basketball.png');
+    netImg = loadImage('pictures/net.png');
+    courtImg = loadImage('pictures/court.png')
 }
 
 function setup() {
     new Canvas(windowWidth, windowHeight);
     world.gravity.y = 30;
     setupBounds();
-    setupBall();
     setupFloor();
+    setupBall();
     setupNet();
     setUpRectangle();
     overlap();
     randomizeX();
     randomizeY();
-    basketBallImg.resize(65, 65);
+    basketBallImg.resize(windowHeight / 16, windowHeight / 16);
     netImg.resize(100, 100);
+    courtImg.resize(windowWidth, windowHeight / 4);
     soundFormats('mp3', 'ogg');
-    swish = loadSound('swish.mp3');
-    dribble = loadSound('dribble.mp3');
+    swish = loadSound('sounds/swish.mp3');
+    dribble = loadSound('sounds/dribble.mp3');
+    backgroundImg = loadImage('pictures/background.png');
 }
 
 
 function draw() {
     clear();
+    background(backgroundImg);
     if (ball.mouse.pressing()) {
         ball.moveTowards(
             mouse.x + ball.mouse.x,
@@ -68,26 +72,28 @@ function draw() {
         );
         world.gravity.y = 0;
         net.overlaps(ball);
-        netsign.overlaps(ball);
         mouseIsPressed = false;
         bounceOffFloor = 0;
     }
-    if (mouse.released()){
+    if (mouse.released()) {
         world.gravity.y = 30;
     }
 
     if (kb.presses('space')) {
-        win.remove();
-        finalScore = 0;
+        if (finalScore == 12) {
+            setupBall();
+            win.remove();
+            finalScore = 0;
+        }
     }
 
     if (ball.collides(floor)) {
-        if (bounceOffFloor > 8){
+        if (bounceOffFloor > 8) {
         }
         else {
             dribble.play();
         }
-        bounceOffFloor+=1;
+        bounceOffFloor += 1;
     }
 
     if (ball.collides(walls)) {
@@ -110,13 +116,14 @@ function drawScore() {
 
 
     if (ball.overlaps(netbound2)) {
-        finalScore = finalScore + 10;
+        finalScore += 2;
         swish.play();
         ball.remove();
         setupBall();
         net.remove();
         setUpRectangle();
-        if (finalScore == 50) {
+        if (finalScore == 12) {
+            ball.remove();
             win();
         }
     }
@@ -135,10 +142,10 @@ function randomizeY() {
 function setupBall() {
     ball = new Sprite();
     ball.addImage('basketball', basketBallImg);
-    ball.diameter = ballSize;
+    ball.diameter = windowHeight / 16;
     ball.bounciness = 0.75;
     ball.speed = 0;
-    ball.pos = { x: randomizeX(), y: randomizeY() };
+    ball.pos = { x: 100, y: windowHeight / 2 };
     ball.sleeping = true;
 }
 
@@ -163,9 +170,10 @@ function setupBounds() {
 function setupFloor() {
     floor = new Sprite();
     floor.color = colors.grey;
-    floor.y = windowHeight;
+    floor.addImage('court', courtImg);
+    floor.y = windowHeight - 50;
     floor.w = windowWidth;
-    floor.h = windowHeight / 3;
+    floor.h = windowHeight / 8;
     floor.collider = 'static';
 }
 
@@ -180,34 +188,26 @@ function setUpRectangle() {
 }
 
 function setupNet() {
-    netsign = new Sprite();
-    netsign.color = colors.yellow;
-    netsign.w = 196;
-    netsign.h = 1;
-    netsign.pos = { x: windowWidth, y: windowHeight / 3 };
-    netsign.collider = 'static';
-    netsign.visible = false;
-
     netbound = new Sprite();
-    netbound.pos = { x: windowWidth - 100, y: windowHeight / 2 + 60 };
-    netbound.h = windowHeight / 2;
+    netbound.pos = { x: windowWidth - 85, y: windowHeight / 3 + 30 };
+    netbound.h = 100;
     netbound.w = 2;
-    noStroke();
+    netbound.rotation = -15;
     netbound.visible = false;
     netbound.collider = 'static';
 
-    netwall = new Sprite();
-    netwall.pos = { x: windowWidth - 105, y: windowHeight / 2 + 40 };
-    netwall.h = windowHeight / 2.5;
-    netwall.w = 2;
-    noStroke();
-    netwall.visible = false;
-    netwall.collider = 'static';
+    netbound = new Sprite();
+    netbound.pos = { x: windowWidth - 15, y: windowHeight / 3 + 30 };
+    netbound.h = 100;
+    netbound.w = 2;
+    netbound.rotation = 10;
+    netbound.visible = false;
+    netbound.collider = 'static';
 
     netbound2 = new Sprite();
-    netbound2.pos = { x: windowWidth, y: windowHeight / 2 + 30 };
+    netbound2.pos = { x: windowWidth, y: windowHeight / 3 + 60 };
     netbound2.h = 2;
-    netbound2.w = 200;
+    netbound2.w = 150;
     noStroke();
     netbound2.visible = false;
     netbound2.collider = 'static';
